@@ -1,0 +1,8 @@
+/build/
+/build_cmake/
+*.obj
+*.exe
+*.pdb
+frame.png
+msvc.bat
+imgui.ini
