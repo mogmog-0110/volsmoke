@@ -1,72 +1,38 @@
-# volsmoke — 3D ボリュメトリック煙＆炎の GPU シミュレーション
+# volsmoke
 
 3D グリッド上で流体方程式 (Navier-Stokes) を GPU で解き、密度・温度場を
-**ボリュームレイマーチ**で立体描画する DirectX 12 のリアルタイムデモ。
-炎・煙の見た目をスライダーでその場で作り変えられる。
-
-自作ゲームエンジン [MitiruEngine](https://github.com/mogmog-0110/MitiruEngine) の
-DX12 コンピュート基盤 (`Dx12ComputeContext`) の上に実装している。
-
-![presets](media/presets.png)
+ボリュームレイマーチで立体描画するリアルタイムの煙＆炎デモ。炎・煙を
+ウィンドウ内のスライダーでその場で作り変えられる。自作エンジン
+[MitiruEngine](https://github.com/mogmog-0110/MitiruEngine) の DX12 コンピュート基盤の上に実装。
 
 ![montage](media/montage.gif)
+![presets](media/presets.png)
 
-> 注: 流体ソルバ自体は古典的な手法 (Stam 1999 / Fedkiw 2001-2002, GPU 化は GPU Gems 3, 2007)。
-> 本リポジトリはそれを自作 DX12 エンジン上にフルスクラッチ実装したもの。
+## 仕組み (1 フレーム / 128³ グリッド)
 
-## 仕組み
+注入 → 移流 → 浮力 → 渦confinement → 圧力射影 (Jacobi 40 反復) → ボリュームレイマーチ。
+炎は温度を黒体放射色に写像して発光、煙は光方向への 2 段目マーチで自己影を付ける。
+全フィールドは `RWTexture3D` で読み書きする全コンピュート実装。
 
-毎フレーム、128³ のグリッドに対してコンピュートシェーダで以下を順に解く:
-
-| 段 | 内容 |
-|---|---|
-| 注入 (inject) | 火源に温度・密度・上向き速度を与える |
-| 移流 (advect) | 速度場で速度・密度・温度を semi-Lagrangian に運ぶ |
-| 浮力 (buoyancy) | 温度に比例した上昇力を加える |
-| 渦 (vorticity confinement) | 数値拡散で失われた小スケールの渦を復元し乱流を取り戻す |
-| 圧力 (pressure projection) | 発散を計算 → Jacobi 法 40 反復 → 勾配を引いて非圧縮化 |
-| 描画 (raymarch) | カメラから光線を飛ばし、温度→黒体放射色で発光、密度を吸収 + 自己影 |
-
-- 温度を**黒体放射ふうの色**(暗赤→赤→橙→黄→白)に写像して炎を発光させる。
-- 煙は**光方向へ 2 段目のレイマーチ**を打って自己影を付け、立体感を出す。
-- 全フィールドは `RWTexture3D` (UAV) で読み書きし、パス間は UAV バリアで同期する。
-
-## ビルド
-
-Windows + Visual Studio 2022 (C++20)。
+## ビルド (Windows / VS2022 / C++20)
 
 ```bash
 cmake -B build -G Ninja -DMITIRU_ROOT=E:/user/MitiruEngine
 cmake --build build
 ```
 
-`MITIRU_ROOT` は MitiruEngine のチェックアウト先 (ヘッダと vendored ImGui を参照)。
-
 ## 実行
 
 ```bash
-# ライブ調整 (窓 + スライダー + プリセット切替)
-volsmoke --interactive
-
-# プリセット指定 / 窓サイズ指定
-volsmoke --interactive --preset blue --width 1600 --height 900
-
-# 複数を横並びで同時比較 (ライブ)
-volsmoke --interactive --compare fire,blue,smoke --width 1500 --height 720
-
-# ヘッドレスで静止画 1 枚 (N フレーム回した最終フレーム)
-volsmoke --out fire.png --frames 130 --preset fire
-
-# ヘッドレスで横並び比較を 1 枚
-volsmoke --compare fire,blue,smoke --out compare.png --frames 140 --width 1500
-
-# 連番ダンプ (アニメーション素材)
-volsmoke --seq frames --frames 175 --seqfrom 25 --stride 2 --preset fire
+volsmoke --interactive                       # ライブ調整 (窓内でレイアウト/プリセット/スライダー)
+volsmoke --interactive --compare fire,blue,smoke   # 複数を横並びで同時比較
+volsmoke --compare fire,blue,smoke --out a.png     # ヘッドレスで画像 1 枚
 ```
 
-プリセット: `fire` / `blue` (青いガス炎) / `torch` (松明) / `smoke` / `ink` (色付きの煙)。
-`--compare a,b,c` は各プリセットを独立にシミュレートして横タイルに並べる。既定の窓サイズは 1280×720。
+プリセット: `fire` / `blue` / `torch` / `smoke` / `ink`。窓内の Layout ボタンで 1〜4 面、各タイルのプリセットを切替。
 
-## ライセンス / 帰属
+---
 
-Copyright (c) 2026 川村優弥 (Shiggy)。MitiruEngine の一部として開発。
+流体ソルバ自体は古典的手法 (Stam 1999 / Fedkiw 2001-2002、GPU 化は GPU Gems 3, 2007)。
+本リポジトリはそれを自作 DX12 エンジン上にフルスクラッチ実装したもの。
+Copyright (c) 2026 川村優弥 (Shiggy)。
