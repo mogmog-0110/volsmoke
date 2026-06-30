@@ -31,8 +31,11 @@ volsmoke --compare fire,blue,smoke --out a.png     # ヘッドレスで画像 1 
 
 プリセット: `fire` / `blue` / `torch` / `smoke` / `ink`。窓内の Layout ボタンで 1〜4 面、各タイルのプリセットを切替。
 
+## 下敷きにした手法
+
+Stam, Stable Fluids (1999) / Fedkiw, Stam & Jensen, Visual Simulation of Smoke (2001) /
+Nguyen, Fedkiw & Jensen, Animation of Fire (2002) / Crane, Llamas & Tariq, GPU Gems 3 (2007)。
+
 ---
 
-流体ソルバ自体は古典的手法 (Stam 1999 / Fedkiw 2001-2002、GPU 化は GPU Gems 3, 2007)。
-本リポジトリはそれを自作 DX12 エンジン上にフルスクラッチ実装したもの。
 Copyright (c) 2026 川村優弥 (Shiggy)。
