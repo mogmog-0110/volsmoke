@@ -38,4 +38,4 @@ Nguyen, Fedkiw & Jensen, Animation of Fire (2002) / Crane, Llamas & Tariq, GPU G
 
 ---
 
-Copyright (c) 2026 川村優弥 (Shiggy)。
+Copyright (c) 2026 mogmog-0110
